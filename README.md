@@ -8,8 +8,7 @@ catalog** with a deterministic rules engine, and auto-generate a **BOQ**,
 
 ## Architectural principle
 
-Same pattern used across the rest of this portfolio (NOC Agentic AI
-Platform, Medical Triage, WebSentry): **the LLM only extracts unstructured
+**the LLM only extracts unstructured
 input into structured candidates — it never decides quantities, product
 matches, or prices.** All matching and pricing runs through
 `backend/app/services/rules_engine.py`, a deterministic engine that logs a
