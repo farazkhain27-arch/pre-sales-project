@@ -1,6 +1,6 @@
-# AI Presales Assistant — SaaS
+# AI Presales Assistant
 
-Multi-tenant SaaS that automates telecom/IT presales workflows: upload an
+Multi-tenant SaaS that automates presales workflows: upload an
 **RFP** or **Customer Requirements** doc, run an LLM extraction agent to pull
 out structured requirements, match them against your **product/datasheet
 catalog** with a deterministic rules engine, and auto-generate a **BOQ**,
@@ -8,8 +8,8 @@ catalog** with a deterministic rules engine, and auto-generate a **BOQ**,
 
 ## Architectural principle
 
-Same pattern used across the rest of this portfolio (NOC Agentic AI
-Platform, Medical Triage, WebSentry): **the LLM only extracts unstructured
+Same pattern used across the rest of this portfolio
+**the LLM only extracts unstructured
 input into structured candidates — it never decides quantities, product
 matches, or prices.** All matching and pricing runs through
 `backend/app/services/rules_engine.py`, a deterministic engine that logs a
