@@ -5,6 +5,7 @@ __pycache__/
 .env
 venv/
 .env.*
+!backend/.env.example
 .pytest_cache/
 .python-version
 
