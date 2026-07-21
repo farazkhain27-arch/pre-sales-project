@@ -26,7 +26,7 @@ export default function ProjectDetail() {
     const form = new FormData()
     form.append('doc_type', docType)
     form.append('file', file)
-    await client.post(`/projects/${id}/documents`, form, { headers: { 'Content-Type': 'multipart/form-data' } })
+    await client.post(`/projects/${id}/documents`, form)
     setFile(null)
     alert('Document uploaded')
   }
@@ -37,6 +37,8 @@ export default function ProjectDetail() {
       await client.post(`/projects/${id}/extract`)
       await loadRequirements()
       await loadProject()
+    } catch (err: any) {
+      alert(err?.response?.data?.detail || 'Extraction failed. Please check your document and try again.')
     } finally { setLoading(false) }
   }
 

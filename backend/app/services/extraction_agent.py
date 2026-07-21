@@ -13,11 +13,15 @@ Graph:
   parse_document -> extract_requirements -> validate_requirements -> END
 """
 import json
+import re
+import logging
 from typing import TypedDict, List
 from langgraph.graph import StateGraph, END
 from anthropic import Anthropic
 
 from ..config import get_settings
+
+logger = logging.getLogger(__name__)
 
 settings = get_settings()
 
@@ -68,10 +72,32 @@ def extract_requirements(state: ExtractionState) -> ExtractionState:
     )
     text = "".join(block.text for block in response.content if block.type == "text").strip()
     text = text.removeprefix("```json").removesuffix("```").strip()
+    # Log a short preview of the LLM output for debugging when extraction returns no results
     try:
-        candidates = json.loads(text)
-    except json.JSONDecodeError:
-        candidates = []
+        preview = (text[:1000] + '...') if len(text) > 1000 else text
+        logger.info("LLM output preview: %s", preview)
+    except Exception:
+        pass
+
+    def _parse_json_array(raw: str):
+        try:
+            value = json.loads(raw)
+            return value if isinstance(value, list) else []
+        except json.JSONDecodeError:
+            match = re.search(r"(\[.*\])", raw, re.S)
+            if match:
+                try:
+                    value = json.loads(match.group(1))
+                    return value if isinstance(value, list) else []
+                except json.JSONDecodeError:
+                    return []
+            return []
+
+    candidates = _parse_json_array(text)
+    try:
+        logger.info("Parsed %d candidate requirements from LLM output", len(candidates))
+    except Exception:
+        pass
     state["candidate_requirements"] = candidates
     return state
 

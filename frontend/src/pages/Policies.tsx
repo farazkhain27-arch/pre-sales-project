@@ -22,7 +22,7 @@ export default function Policies() {
       const form = new FormData()
       form.append('title', title)
       form.append('file', file)
-      await client.post('/policies/upload', form, { headers: { 'Content-Type': 'multipart/form-data' } })
+      await client.post('/policies/upload', form)
       setTitle(''); setFile(null)
       await load()
     } finally {

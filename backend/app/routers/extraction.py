@@ -6,6 +6,7 @@ import io
 from fastapi import APIRouter, Depends, HTTPException
 from sqlalchemy.orm import Session
 from pypdf import PdfReader
+from docx import Document as DocxDocument
 
 from .. import models, schemas
 from ..database import get_db
@@ -30,6 +31,9 @@ def _extract_text(storage_path: str, filename: str) -> str:
     if filename.lower().endswith(".pdf"):
         reader = PdfReader(io.BytesIO(raw))
         return "\n".join(page.extract_text() or "" for page in reader.pages)
+    if filename.lower().endswith(".docx"):
+        document = DocxDocument(io.BytesIO(raw))
+        return "\n".join(paragraph.text for paragraph in document.paragraphs)
     return raw.decode("utf-8", errors="ignore")
 
 
@@ -57,7 +61,7 @@ def extract_requirements(project_id: str, db: Session = Depends(get_db),
             req = models.ExtractedRequirement(
                 project_id=project.id,
                 category=r.get("category"),
-                description=r["description"],
+                description=r.get("description"),
                 quantity=r.get("quantity", 1),
                 unit=r.get("unit", "unit"),
                 technical_attributes=r.get("technical_attributes", {}),
@@ -67,6 +71,12 @@ def extract_requirements(project_id: str, db: Session = Depends(get_db),
             db.add(req)
             created.append(req)
         doc.processed = True
+
+    if not created:
+        raise HTTPException(
+            400,
+            "Extraction completed but returned no requirements. Please upload a readable RFP or Customer Requirements document and try again."
+        )
 
     project.status = models.ProjectStatus.REQUIREMENTS_READY
     db.commit()

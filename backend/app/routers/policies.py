@@ -7,6 +7,7 @@ import io
 from fastapi import APIRouter, Depends, HTTPException, UploadFile, File, Form
 from sqlalchemy.orm import Session
 from pypdf import PdfReader
+from docx import Document as DocxDocument
 
 from .. import models, schemas
 from ..database import get_db
@@ -22,6 +23,9 @@ def _extract_text(storage_path: str, filename: str) -> str:
     if filename.lower().endswith(".pdf"):
         reader = PdfReader(io.BytesIO(raw))
         return "\n".join(page.extract_text() or "" for page in reader.pages)
+    if filename.lower().endswith(".docx"):
+        document = DocxDocument(io.BytesIO(raw))
+        return "\n".join(paragraph.text for paragraph in document.paragraphs)
     return raw.decode("utf-8", errors="ignore")
 
 
